@@ -10,7 +10,7 @@ import secret
 class Jobs_generator():
     joblink = []  # Initialized list to store links
     maxcount = 5  # Max daily apply quota for Naukri
-    keywords = ['Data Analyst'
+    keywords = ['Data Analyst, Data scientist'
 
                 ]  # Add your list of roles you want to apply (comma-separated)
     location = 'Pune'  # Add your location/city name for within India or remote
@@ -40,28 +40,34 @@ class Jobs_generator():
                         url = f"https://www.naukri.com/{k.lower().replace(' ', '-')}-jobs-in-{location.lower().replace(' ', '-')}"
                     page.goto(url)
                     print(url)
-                    time.sleep(3)
+                    time.sleep(1)
                     while True:
                         try:
 
                             # Scrape the URLs from the search results
 
-                            count = 10
+                            count = 1000 # number of pages want to scrape
                             while True:
+                                print('Page no.',count)
                                 if count == 0:
                                     break
                                 page.evaluate('window.scrollTo(0, document.body.scrollHeight)')
 
                                 # Modify the style attribute
-                                page.eval_on_selector('.rc-slider-track', 'el => el.style.width = "3.33333%"')
+                                page.eval_on_selector('.rc-slider-track', 'el => el.style.width = "0%"')
 
 
                                 urls = page.query_selector_all('.list a[href^="http"]')
                                 for url in urls:
                                     href = url.get_attribute('href')
-                                    if 'ambitionbox' in href:
+                                    if 'ambitionbox' in href or '-jobs-careers-' in href:
                                         continue
-                                    joblink.append(href)
+                                    if ('-0-to' in href   or '-1-to' in href) and (
+                                            'analyst' in href or 'scientist' in href or 'analytics' in href or 'BI developer' in href
+                                    ):
+                                        joblink.append(href)
+                                    else:
+                                        continue
                                 print(len(joblink))
                                 # Check if there is a "Next" button and click on it
                                 print('Clicked next')
@@ -71,11 +77,12 @@ class Jobs_generator():
                                     time.sleep(2)  # Add a small delay to allow page transition
                                 else:
                                     break
-                                count -= 0.5
+                                count -= 1
 
                         except Exception as e:
                             print('Error while gathering url ', e)
                         finally:
+                            print('Completed the gathering url')
                             break
                 except Exception as e:
                     print('Error in url scrapping', e)

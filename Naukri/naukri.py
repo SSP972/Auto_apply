@@ -6,7 +6,7 @@ from playwright.sync_api import sync_playwright
 import os
 import  secret
 
-
+#
 # import  job_list_generator
 # print('Job list generator started')
 # job_list_generator.Jobs_generator()
@@ -15,14 +15,15 @@ import  secret
 lastname = secret.lastname  # Add your LastName
 firstname = secret.firstname# Add your FirstName
 joblink = []  # Initialized list to store links
-maxcount = 20  # Max daily apply quota for Naukri
+maxcount = 80  # Max daily apply quota for Naukri
 keywords = ['Data scientist', 'Data Analyst', 'Product Analyst']  # Add your list of roles you want to apply (comma-separated)
 location = 'Pune'  # Add your location/city name for within India or remote
 applied = 0  # Count of jobs applied successfully
 failed = 0  # Count of jobs failed
 applied_list = {
     'passed': [],
-    'failed': []
+    'failed': [],
+    'Apply_company': []
 }  # Saved list of applied and failed job links for manual review
 yournaukriemail= secret.yournaukriemail
 yournaukripass = secret.yournaukripass
@@ -59,6 +60,7 @@ with sync_playwright() as playwright:
                     time.sleep(random.randint(1,2))
                     if "company-site-button" in page.content() :
                         manual_application = pd.DataFrame({'Urls':manual_urls.append(i)})  #creating data fram to apply on companysite
+                        applied_list['Apply_company'].append(i)
                         data.drop(i,inplace=True)
                         print('company website')
                         continue
@@ -73,6 +75,7 @@ with sync_playwright() as playwright:
                         applied_list['passed'].append(i)
                         print('Applied for', i, 'Count:', applied)
                     else:
+
                         print('wrong link')
                         continue
 
@@ -96,6 +99,7 @@ with sync_playwright() as playwright:
                     print('No ')
 
             else:
+                print(f'Given applied {maxcount}')
                 break
 
 
@@ -107,8 +111,12 @@ with sync_playwright() as playwright:
     finally:
         directory = r'D:\pythonProject\Gather_Job\Naukri\data'
         file_count = len([f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))])   # creating the file which store failed links and passed links
-        # result_df= pd.DataFrame(applied_list)
-        # result_df.to_csv(f'D:\pythonProject\Gather_Job\\Naukri\data\\applied_on_{file_count}.csv',index=False)
+        Applied_df= pd.DataFrame({'APPLIED application': applied_list['passed']} )
+        Applied_df.to_csv(f'D:\pythonProject\Gather_Job\\Naukri\data\\applied_on_{file_count}.csv',index=False)
+        Failed_df = pd.DataFrame({'FAILED application': applied_list['failed']} )
+        Failed_df.to_csv(f'D:\pythonProject\Gather_Job\\Naukri\data\\Failed_on_{file_count}.csv', index=False)
+        Apply_on_df = pd.DataFrame({'APPLIED application': applied_list['Apply_company']} )
+        Apply_on_df.to_csv(f'D:\pythonProject\Gather_Job\\Naukri\data\\To_apply{file_count}.csv', index=False)
         context.close()
         browser.close()
 
